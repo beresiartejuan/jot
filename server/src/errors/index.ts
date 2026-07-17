@@ -1,8 +1,10 @@
+type StatusCode = 200 | 201 | 400 | 401 | 403 | 404 | 409 | 422 | 500;
+
 export class AppError extends Error {
   readonly code: string;
-  readonly statusCode: number;
+  readonly statusCode: StatusCode;
 
-  constructor(code: string, message: string, statusCode: number) {
+  constructor(code: string, message: string, statusCode: StatusCode) {
     super(message);
     this.code = code;
     this.statusCode = statusCode;

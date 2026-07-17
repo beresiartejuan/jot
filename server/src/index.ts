@@ -1,14 +1,12 @@
-import { Hono } from 'hono'
+import { Hono } from "hono";
+import apiHandler from "./handlers";
 
-const app = new Hono()
+const app = new Hono();
 
-const welcomeStrings = [
-  'Hello Hono!',
-  'To learn more about Hono on Vercel, visit https://vercel.com/docs/frameworks/backend/hono'
-]
+app.get("/health", (c) => {
+  return c.json({ status: "ok" });
+});
 
-app.get('/', (c) => {
-  return c.text(welcomeStrings.join('\n\n'))
-})
+app.route("/api", apiHandler);
 
-export default app
+export default app;
