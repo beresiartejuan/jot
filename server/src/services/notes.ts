@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { err, ok, type Result } from "neverthrow";
 import { db } from "@/db";
 import {
   insertNoteSchema,
@@ -13,9 +14,9 @@ import {
   type NewNoteTag,
   type NewTag,
   type Note,
-  type NoteTag,
   type Tag,
 } from "@/db/schema";
+import { NotFoundError, UnauthorizedError, ValidationError } from "@/errors";
 
 export type NoteWithTags = Note & { tags: Tag[] };
 
@@ -123,23 +124,42 @@ export type CreateNoteInput = Omit<NewNote, "userId"> & {
   tagNames?: string[];
 };
 
-export async function createNote(input: CreateNoteInput): Promise<NoteWithTags> {
+export async function createNote(
+  input: CreateNoteInput,
+): Promise<Result<NoteWithTags, ValidationError>> {
   const { tagNames, ...noteInput } = input;
 
-  const parsed = insertNoteSchema.parse(noteInput);
+  const parsed = insertNoteSchema.safeParse(noteInput);
 
-  const [note] = await db.insert(notesTable).values(parsed).returning();
+  if (!parsed.success) {
+    return err(new ValidationError("Invalid note data"));
+  }
+
+  const [note] = await db
+    .insert(notesTable)
+    .values(parsed.data)
+    .returning();
+
   const validatedNote = selectNoteSchema.parse(note);
+  const tags = await attachTags(
+    validatedNote.id,
+    validatedNote.userId,
+    tagNames ?? [],
+  );
 
-  const tags = await attachTags(validatedNote.id, validatedNote.userId, tagNames ?? []);
-
-  return {
+  return ok({
     ...validatedNote,
     tags,
-  };
+  });
 }
 
-export async function listNotes(userId: string): Promise<NoteWithTags[]> {
+export async function listNotes(
+  userId: string,
+): Promise<Result<NoteWithTags[], ValidationError>> {
+  if (!userId) {
+    return err(new ValidationError("User ID is required"));
+  }
+
   const notes = await db
     .select()
     .from(notesTable)
@@ -148,13 +168,13 @@ export async function listNotes(userId: string): Promise<NoteWithTags[]> {
 
   const tagsByNoteId = await loadTagsForNotes(notes.map((n) => n.id));
 
-  return mergeNotesWithTags(notes, tagsByNoteId);
+  return ok(mergeNotesWithTags(notes, tagsByNoteId));
 }
 
 export async function getNote(
   noteId: string,
   userId?: string,
-): Promise<NoteWithTags | null> {
+): Promise<Result<NoteWithTags, NotFoundError | UnauthorizedError>> {
   const conditions = [eq(notesTable.id, noteId)];
 
   if (userId) {
@@ -171,18 +191,20 @@ export async function getNote(
     .where(and(...conditions))
     .limit(1);
 
-  if (!note) return null;
+  if (!note) {
+    return err(new NotFoundError("Note"));
+  }
 
   const validatedNote = selectNoteSchema.parse(note);
   const tags = await loadTagsForNotes([validatedNote.id]);
 
-  return {
+  return ok({
     ...validatedNote,
     tags: tags.get(validatedNote.id) ?? [],
-  };
+  });
 }
 
-export type UpdateNoteInput = Partial<Omit<NewNote, "userId" >> & {
+export type UpdateNoteInput = Partial<Omit<NewNote, "userId">> & {
   tagNames?: string[];
 };
 
@@ -190,7 +212,7 @@ export async function updateNote(
   noteId: string,
   userId: string,
   input: UpdateNoteInput,
-): Promise<NoteWithTags | null> {
+): Promise<Result<NoteWithTags, NotFoundError | UnauthorizedError | ValidationError>> {
   const { tagNames, ...noteInput } = input;
 
   const [existing] = await db
@@ -199,13 +221,19 @@ export async function updateNote(
     .where(and(eq(notesTable.id, noteId), eq(notesTable.userId, userId)))
     .limit(1);
 
-  if (!existing) return null;
+  if (!existing) {
+    return err(new NotFoundError("Note"));
+  }
 
-  const parsed = updateNoteSchema.parse(noteInput);
+  const parsed = updateNoteSchema.safeParse(noteInput);
+
+  if (!parsed.success) {
+    return err(new ValidationError("Invalid note data"));
+  }
 
   const [note] = await db
     .update(notesTable)
-    .set(parsed)
+    .set(parsed.data)
     .where(and(eq(notesTable.id, noteId), eq(notesTable.userId, userId)))
     .returning();
 
@@ -220,21 +248,29 @@ export async function updateNote(
 
   const tags = await loadTagsForNotes([validatedNote.id]);
 
-  return {
+  return ok({
     ...validatedNote,
     tags: tags.get(validatedNote.id) ?? [],
-  };
+  });
 }
 
 export async function deleteNote(
   noteId: string,
   userId: string,
-): Promise<NoteWithTags | null> {
-  const note = await getNote(noteId, userId);
+): Promise<Result<NoteWithTags, NotFoundError | UnauthorizedError>> {
+  const noteResult = await getNote(noteId, userId);
 
-  if (!note || note.userId !== userId) return null;
+  if (noteResult.isErr()) {
+    return err(noteResult.error);
+  }
+
+  const note = noteResult.value;
+
+  if (note.userId !== userId) {
+    return err(new UnauthorizedError("Cannot delete another user's note"));
+  }
 
   await db.delete(notesTable).where(eq(notesTable.id, noteId));
 
-  return note;
+  return ok(note);
 }
