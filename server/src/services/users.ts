@@ -14,7 +14,6 @@ import {
   NotFoundError,
   UnauthorizedError,
   ValidationError,
-  type AppError,
 } from "@/errors";
 import {
   ACCESS_TOKEN_TTL_SECONDS,
@@ -26,6 +25,8 @@ import {
   signRefreshToken,
   verifyRefreshToken,
 } from "./auth";
+
+const DUMMY_HASH = "$2a$10$0000000000000000000000000000000000000000000000000000";
 
 export type CreateUserInput = Omit<NewUser, "passwordHash" | "randomKey" | "refreshTokenKey"> & {
   password: string;
@@ -69,33 +70,27 @@ export async function createUser(
   }
 
   const passwordHash = await bcryptjs.hash(password, 10);
+  const id = crypto.randomUUID();
+  const email = rest.email;
+  const randomKey = generateRandomKey();
+  const refreshTokenKey = computeRefreshTokenKey({ id, email, randomKey });
 
   const parsed = insertUserSchema.safeParse({
     ...rest,
+    id,
     passwordHash,
+    randomKey,
+    refreshTokenKey,
   });
 
   if (!parsed.success) {
     return err(new ValidationError("Invalid user data"));
   }
 
-  const id = parsed.data.id ?? crypto.randomUUID();
-  const randomKey = generateRandomKey();
-  const refreshTokenKey = computeRefreshTokenKey({
-    id,
-    email: parsed.data.email,
-    randomKey,
-  });
-
   try {
     const [created] = await db
       .insert(usersTable)
-      .values({
-        ...parsed.data,
-        id,
-        randomKey,
-        refreshTokenKey,
-      })
+      .values(parsed.data)
       .returning();
 
     const safeUser = toSafeUser(selectUserSchema.parse(created));
@@ -131,13 +126,10 @@ export async function login(
     .where(eq(usersTable.email, email))
     .limit(1);
 
-  if (!user) {
-    return err(new UnauthorizedError("Invalid credentials"));
-  }
+  const passwordHash = user?.passwordHash ?? DUMMY_HASH;
+  const isValid = await bcryptjs.compare(password, passwordHash);
 
-  const isValid = await bcryptjs.compare(password, user.passwordHash);
-
-  if (!isValid) {
+  if (!user || !isValid) {
     return err(new UnauthorizedError("Invalid credentials"));
   }
 
@@ -145,22 +137,6 @@ export async function login(
   const tokens = await buildAuthTokens({ ...safeUser, refreshTokenKey: user.refreshTokenKey });
 
   return ok({ user: safeUser, tokens });
-}
-
-type DecodedRefreshToken = {
-  refreshTokenKey: string;
-  exp: number;
-};
-
-export async function decodeRefreshToken(
-  token: string,
-): Promise<Result<DecodedRefreshToken, UnauthorizedError>> {
-  try {
-    const payload = await verifyRefreshToken(token);
-    return ok({ refreshTokenKey: payload.rtk, exp: 0 });
-  } catch {
-    return err(new UnauthorizedError("Invalid or expired refresh token"));
-  }
 }
 
 export async function refreshAccessToken(
@@ -171,17 +147,13 @@ export async function refreshAccessToken(
     UnauthorizedError | NotFoundError
   >
 > {
-  let refreshPayload: Awaited<ReturnType<typeof verifyRefreshToken>>;
-  let exp = 0;
+  let payload: Awaited<ReturnType<typeof verifyRefreshToken>>;
+  let exp: number;
 
   try {
     const result = await verifyRefreshToken(refreshToken);
-    refreshPayload = result;
-
-    const decoded = JSON.parse(Buffer.from(refreshToken.split(".")[1], "base64url").toString("utf8")) as {
-      exp?: number;
-    };
-    exp = decoded.exp ?? 0;
+    payload = result;
+    exp = result.exp ?? 0;
   } catch {
     return err(new UnauthorizedError("Invalid or expired refresh token"));
   }
@@ -189,7 +161,7 @@ export async function refreshAccessToken(
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.refreshTokenKey, refreshPayload.rtk))
+    .where(eq(usersTable.refreshTokenKey, payload.rtk))
     .limit(1);
 
   if (!user) {
@@ -253,16 +225,4 @@ export async function logoutAllSessions(
     .returning();
 
   return ok(toSafeUser(selectUserSchema.parse(updated)));
-}
-
-export async function findUserById(
-  userId: string,
-): Promise<Result<SafeUser, NotFoundError>> {
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-
-  if (!user) {
-    return err(new NotFoundError("User"));
-  }
-
-  return ok(toSafeUser(selectUserSchema.parse(user)));
 }

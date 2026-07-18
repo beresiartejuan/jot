@@ -3,17 +3,10 @@ import { nanoid } from "nanoid";
 import { createHash } from "node:crypto";
 import type { SafeUser } from "./users";
 import type { User } from "@/db/schema";
+import { env } from "@/env";
 
-if (!process.env.JWT_ACCESS_SECRET) {
-  throw new Error("JWT_ACCESS_SECRET is not set");
-}
-
-if (!process.env.JWT_REFRESH_SECRET) {
-  throw new Error("JWT_REFRESH_SECRET is not set");
-}
-
-const ACCESS_SECRET = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET);
-const REFRESH_SECRET = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET);
+const ACCESS_SECRET = new TextEncoder().encode(env.JWT_ACCESS_SECRET);
+const REFRESH_SECRET = new TextEncoder().encode(env.JWT_REFRESH_SECRET);
 
 export const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 export const REFRESH_TOKEN_TTL_SECONDS = 72 * 60 * 60;
@@ -27,6 +20,7 @@ export type AccessTokenPayload = {
 
 export type RefreshTokenPayload = {
   rtk: string;
+  exp?: number;
 };
 
 export function computeRefreshTokenKey(user: Pick<User, "id" | "randomKey" | "email">): string {
@@ -36,7 +30,7 @@ export function computeRefreshTokenKey(user: Pick<User, "id" | "randomKey" | "em
 }
 
 export function generateRandomKey(): string {
-  return nanoid(5);
+  return nanoid(16);
 }
 
 export async function signAccessToken(user: SafeUser): Promise<string> {
@@ -78,6 +72,7 @@ export async function verifyRefreshToken(token: string): Promise<RefreshTokenPay
 
   return {
     rtk: String(payload.rtk),
+    exp: payload.exp ? Number(payload.exp) : undefined,
   };
 }
 
