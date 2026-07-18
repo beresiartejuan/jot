@@ -1,23 +1,32 @@
 import { createMiddleware } from "hono/factory";
-import { z } from "zod";
-
-const authHeaderSchema = z.string().min(1);
+import { verifyAccessToken } from "@/services/auth";
 
 export const authMiddleware = createMiddleware(async (c, next) => {
-  const userId = c.req.header("x-user-id");
+  const authHeader = c.req.header("authorization");
 
-  const parsed = authHeaderSchema.safeParse(userId);
-
-  if (!parsed.success) {
-    return c.json({ error: "Unauthorized", message: "Missing or invalid x-user-id header" }, 401);
+  if (!authHeader?.startsWith("Bearer ")) {
+    return c.json({ error: "UNAUTHORIZED", message: "Missing or invalid Authorization header" }, 401);
   }
 
-  c.set("userId", parsed.data);
-  await next();
+  const token = authHeader.slice("Bearer ".length);
+
+  try {
+    const payload = await verifyAccessToken(token);
+    c.set("userId", payload.sub);
+    c.set("user", payload);
+    await next();
+  } catch {
+    return c.json({ error: "UNAUTHORIZED", message: "Invalid or expired access token" }, 401);
+  }
 });
 
 declare module "hono" {
   interface ContextVariableMap {
     userId: string;
+    user: {
+      sub: string;
+      email: string;
+      username: string;
+    };
   }
 }
