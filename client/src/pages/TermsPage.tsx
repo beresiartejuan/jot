@@ -1,155 +1,177 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { FileText, Scale, Shield, User, Clock, Globe, Lock, AlertCircle } from "lucide-react";
+import {
+	FileText,
+	Scale,
+	Shield,
+	User,
+	Clock,
+	Globe,
+	Lock,
+	AlertCircle,
+	Mail,
+} from "lucide-react";
 
 const sections = [
-  {
-    icon: Scale,
-    title: "1. Acceptance of Terms",
-    content:
-      "By creating an account or using Jot, you agree to these Terms and Conditions and our Privacy Policy. If you do not agree, do not use the service. We may update these terms as the product evolves; continued use after changes means you accept the revised terms.",
-  },
-  {
-    icon: User,
-    title: "2. Accounts and Eligibility",
-    content:
-      "You must provide a valid email address, username, and password to register. You are responsible for keeping your credentials secure. Jot uses short-lived access tokens (15 minutes) and long-lived refresh tokens (72 hours) stored in secure, httpOnly cookies scoped to /api/users. You may log out or invalidate all sessions at any time.",
-  },
-  {
-    icon: FileText,
-    title: "3. Your Content",
-    content:
-      "You retain ownership of the notes, tags, and other content you create. By default, notes are private and visible only to you. When you mark a note as public, you grant Jot the right to host and display that note to anyone with the link or access to public browsing areas.",
-  },
-  {
-    icon: Globe,
-    title: "4. Public Notes",
-    content:
-      "Public notes can be read without authentication. You are solely responsible for the content you publish publicly. Do not share personal data, copyrighted material you do not own, or content that violates applicable laws or the rights of others.",
-  },
-  {
-    icon: Lock,
-    title: "5. Prohibited Use",
-    content:
-      "You may not use Jot to distribute malware, spam, hate speech, harassment, illegal content, or to attempt unauthorized access to accounts or systems. We reserve the right to suspend or terminate accounts that violate these rules.",
-  },
-  {
-    icon: Shield,
-    title: "6. Security and Tokens",
-    content:
-      "Jot issues access tokens and refresh tokens for authentication. Access tokens expire after 15 minutes. Refresh tokens last up to 72 hours and are automatically rotated when close to expiration. You can invalidate all refresh tokens via the logout-all feature.",
-  },
-  {
-    icon: Clock,
-    title: "7. Service Availability",
-    content:
-      "We aim to keep Jot available, but we do not guarantee uptime. Notes are stored on our chosen database infrastructure. We recommend keeping backups of anything critical, especially content you publish publicly.",
-  },
-  {
-    icon: AlertCircle,
-    title: "8. Termination",
-    content:
-      "You may delete your account or log out all sessions at any time. We may suspend or terminate access for violations of these terms, security concerns, or legal requirements. Upon termination, your private notes will no longer be accessible and public notes may be removed.",
-  },
+	{
+		icon: Scale,
+		title: "What you are agreeing to",
+		content:
+			"By using Jot, you accept these Terms and our Privacy Policy. If anything here does not work for you, please do not use the service. We will update these terms as Jot grows, and we will always show the latest effective date at the top of the page.",
+	},
+	{
+		icon: User,
+		title: "Your account",
+		content:
+			"To write and save notes, you need an email, username, and password. Keep your password safe. Jot authenticates you with a short-lived access token (15 minutes) and a long-lived refresh token stored in a secure, httpOnly cookie. You can log out or invalidate every session at once from your account settings.",
+	},
+	{
+		icon: FileText,
+		title: "Your notes belong to you",
+		content:
+			"You keep ownership of everything you create in Jot: notes, tags, and any public content. We only host it so you can access and share it. By default, every note is private. You decide what becomes public.",
+	},
+	{
+		icon: Globe,
+		title: "When you make a note public",
+		content:
+			"Public notes can be read by anyone, even without an account. You are responsible for what you publish. Do not share personal information you should not make public, copyrighted material you do not have rights to, or anything illegal or harmful.",
+	},
+	{
+		icon: Lock,
+		title: "What you cannot do",
+		content:
+			"Do not use Jot to distribute malware, spam, abuse, harassment, illegal content, or to break into accounts or systems. We may suspend or close accounts that violate these rules.",
+	},
+	{
+		icon: Shield,
+		title: "How we keep you logged in",
+		content:
+			"Access tokens expire after 15 minutes. Refresh tokens last up to 72 hours and live in a secure cookie scoped to /api/users. If a refresh token is about to expire, we issue a new one automatically. Use Log out everywhere if you want to invalidate every active session immediately.",
+	},
+	{
+		icon: Clock,
+		title: "Service availability",
+		content:
+			"We work to keep Jot online, but no service is perfect. We do not guarantee 100% uptime. If a note matters to you, especially a public one, keep a backup somewhere safe.",
+	},
+	{
+		icon: AlertCircle,
+		title: "Closing your account",
+		content:
+			"You can delete your account or log out all sessions at any time. We may also suspend or terminate access for violations of these terms, security issues, or legal requirements. When an account is closed, private notes become inaccessible and public notes may be removed.",
+	},
 ];
 
 export function TermsPage(): React.JSX.Element {
-  const lastUpdated = "July 19, 2026";
+	const lastUpdated = "July 19, 2026";
 
-  return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-foreground transition-colors hover:text-primary"
-          >
-            <img
-              src="/jot-icon.png"
-              alt=""
-              className="size-8"
-              width={32}
-              height={32}
-            />
-            <span className="font-heading text-xl font-semibold tracking-tight">Jot</span>
-          </Link>
-          <nav className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/">Back home</Link>
-            </Button>
-          </nav>
-        </div>
-      </header>
+	return (
+		<div className="flex min-h-screen flex-col bg-background">
+			<header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-sm">
+				<div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+					<Link
+						href="/"
+						className="flex items-center gap-2 text-foreground transition-colors hover:text-primary"
+					>
+						<img
+							src="/jot-icon.png"
+							alt=""
+							className="size-8"
+							width={32}
+							height={32}
+						/>
+						<span className="font-heading text-xl font-semibold tracking-tight">
+							Jot
+						</span>
+					</Link>
+					<nav className="flex items-center gap-1">
+						<Button variant="ghost" size="sm" asChild>
+							<Link href="/">Back home</Link>
+						</Button>
+					</nav>
+				</div>
+			</header>
 
-      <main className="flex-1 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-12 text-center">
-            <h1 className="font-heading text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-              Terms and Conditions
-            </h1>
-            <p className="mt-4 text-muted-foreground">
-              Last updated: {lastUpdated}
-            </p>
-          </div>
+			<main className="flex-1 px-4 py-16 sm:px-6 lg:px-8">
+				<div className="mx-auto max-w-3xl">
+					<div className="mb-12 text-center">
+						<h1 className="font-heading text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+							Terms and Conditions
+						</h1>
+						<p className="mt-4 text-muted-foreground">
+							Last updated: {lastUpdated}
+						</p>
+					</div>
 
-          <div className="space-y-10">
-            {sections.map((section) => {
-              const Icon = section.icon;
-              return (
-                <section key={section.title} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="inline-flex rounded-xl bg-leaf-100 p-2.5 text-leaf-700 dark:bg-leaf-900 dark:text-leaf-300">
-                      <Icon className="size-5" aria-hidden="true" />
-                    </div>
-                    <h2 className="font-heading text-xl font-semibold text-card-foreground">
-                      {section.title}
-                    </h2>
-                  </div>
-                  <p className="leading-relaxed text-muted-foreground">
-                    {section.content}
-                  </p>
-                </section>
-              );
-            })}
-          </div>
+					<div className="space-y-10">
+						{sections.map((section) => {
+							const Icon = section.icon;
+							return (
+								<section
+									key={section.title}
+									className="rounded-2xl border border-border bg-card p-6 shadow-sm"
+								>
+									<div className="mb-4 flex items-center gap-3">
+										<div className="inline-flex rounded-xl bg-leaf-100 p-2.5 text-leaf-700 dark:bg-leaf-900 dark:text-leaf-300">
+											<Icon className="size-5" aria-hidden="true" />
+										</div>
+										<h2 className="font-heading text-xl font-semibold text-card-foreground">
+											{section.title}
+										</h2>
+									</div>
+									<p className="leading-relaxed text-muted-foreground">
+										{section.content}
+									</p>
+								</section>
+							);
+						})}
+					</div>
 
-          <div className="mt-12 rounded-2xl border border-border bg-leaf-100/60 p-6 dark:bg-leaf-900/40">
-            <h2 className="font-heading text-lg font-semibold text-foreground">
-              Contact
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              If you have questions about these terms, contact us through the
-              channels provided on the Jot website.
-            </p>
-          </div>
-        </div>
-      </main>
+					<div className="mt-12 rounded-2xl border border-border bg-leaf-100/60 p-6 dark:bg-leaf-900/40">
+						<div className="mb-3 flex items-center gap-3">
+							<div className="inline-flex rounded-xl bg-leaf-200 p-2.5 text-leaf-800 dark:bg-leaf-800 dark:text-leaf-200">
+								<Mail className="size-5" aria-hidden="true" />
+							</div>
+							<h2 className="font-heading text-lg font-semibold text-foreground">
+								Questions about these terms?
+							</h2>
+						</div>
+						<p className="text-muted-foreground">
+							Reach out through the contact channels listed on the Jot
+							website. We read every message.
+						</p>
+					</div>
+				</div>
+			</main>
 
-      <footer className="border-t border-border bg-card px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <div className="flex items-center gap-2">
-            <img
-              src="/jot-icon.png"
-              alt=""
-              className="size-6"
-              width={24}
-              height={24}
-            />
-            <span className="font-heading font-semibold text-foreground">Jot</span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Jot. Capture, organize, share.
-          </p>
-          <div className="flex gap-4 text-sm text-muted-foreground">
-            <Link href="/privacy" className="hover:text-foreground">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-foreground">
-              Terms
-            </Link>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
+			<footer className="border-t border-border bg-card px-4 py-8 sm:px-6 lg:px-8">
+				<div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
+					<div className="flex items-center gap-2">
+						<img
+							src="/jot-icon.png"
+							alt=""
+							className="size-6"
+							width={24}
+							height={24}
+						/>
+						<span className="font-heading font-semibold text-foreground">
+							Jot
+						</span>
+					</div>
+					<p className="text-sm text-muted-foreground">
+						© {new Date().getFullYear()} Jot. Capture, organize, share.
+					</p>
+					<div className="flex gap-4 text-sm text-muted-foreground">
+						<Link href="/privacy" className="hover:text-foreground">
+							Privacy
+						</Link>
+						<Link href="/terms" className="hover:text-foreground">
+							Terms
+						</Link>
+					</div>
+				</div>
+			</footer>
+		</div>
+	);
 }
