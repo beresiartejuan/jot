@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
 import { FileText, Tag, Share2, RefreshCw, ArrowRight, Sparkles } from "lucide-react";
 
 const features = [
@@ -75,7 +76,11 @@ export function LandingPage(): React.JSX.Element {
 						<Button size="sm" asChild>
 							<Link href="/signup">Start writing</Link>
 						</Button>
+						<ModeToggle />
 					</nav>
+					<div className="flex items-center gap-1 sm:hidden">
+						<ModeToggle />
+					</div>
 				</div>
 			</header>
 
