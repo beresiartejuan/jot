@@ -1,8 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
-import { useLocation, Link } from "wouter";
+import {
+	Globe,
+	Loader2,
+	Lock,
+	LogOut,
+	MoreVertical,
+	Pencil,
+	Plus,
+	Search,
+	StickyNote,
+	Trash2,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useLocation } from "wouter";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Dialog,
 	DialogContent,
@@ -19,24 +31,11 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/stores/auth";
 import { useNotesStore } from "@/stores/notes";
-import {
-	Plus,
-	Trash2,
-	Loader2,
-	MoreVertical,
-	LogOut,
-	StickyNote,
-	Globe,
-	Lock,
-	Eye,
-	Construction,
-	Search,
-} from "lucide-react";
 
 function formatDate(date: string): string {
 	return new Date(date).toLocaleDateString(undefined, {
@@ -46,8 +45,20 @@ function formatDate(date: string): string {
 }
 
 export function DashboardPage(): React.JSX.Element {
-	const { user, isAuthenticated, isLoading: authLoading, logout } = useAuthStore();
-	const { notes, isLoading: notesLoading, error, listNotes, createNote, deleteNote } = useNotesStore();
+	const {
+		user,
+		isAuthenticated,
+		isLoading: authLoading,
+		logout,
+	} = useAuthStore();
+	const {
+		notes,
+		isLoading: notesLoading,
+		error,
+		listNotes,
+		createNote,
+		deleteNote,
+	} = useNotesStore();
 	const [, navigate] = useLocation();
 
 	const [newTitle, setNewTitle] = useState("");
@@ -119,16 +130,32 @@ export function DashboardPage(): React.JSX.Element {
 			<header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
 				<div className="mx-auto flex h-16 max-w-6xl items-center justify-between">
 					<div className="flex items-center gap-4">
-						<Link href="/" className="flex items-center gap-2 text-foreground transition-colors hover:text-primary">
-							<img src="/jot-icon.png" alt="" className="size-7" width={28} height={28} />
-							<span className="font-heading text-lg font-semibold tracking-tight">Jot</span>
+						<Link
+							href="/"
+							className="flex items-center gap-2 text-foreground transition-colors hover:text-primary"
+						>
+							<img
+								src="/jot-icon.png"
+								alt=""
+								className="size-7"
+								width={28}
+								height={28}
+							/>
+							<span className="font-heading text-lg font-semibold tracking-tight">
+								Jot
+							</span>
 						</Link>
 						<Separator orientation="vertical" className="hidden h-6 sm:block" />
-						<span className="hidden text-sm text-muted-foreground sm:block">Dashboard</span>
+						<span className="hidden text-sm text-muted-foreground sm:block">
+							Dashboard
+						</span>
 					</div>
 
 					<div className="flex items-center gap-2">
-						<Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+						<Dialog
+							open={isCreateDialogOpen}
+							onOpenChange={setIsCreateDialogOpen}
+						>
 							<DialogTrigger asChild>
 								<Button size="sm">
 									<Plus className="size-4" />
@@ -140,7 +167,8 @@ export function DashboardPage(): React.JSX.Element {
 								<DialogHeader>
 									<DialogTitle>Create a new note</DialogTitle>
 									<DialogDescription>
-										Give it a title and some tags. You will be able to add content soon.
+										Give it a title and some tags. You will be able to add
+										content soon.
 									</DialogDescription>
 								</DialogHeader>
 								<div className="space-y-4 py-4">
@@ -161,11 +189,16 @@ export function DashboardPage(): React.JSX.Element {
 											value={newTags}
 											onChange={(e) => setNewTags(e.target.value)}
 										/>
-										<p className="text-xs text-muted-foreground">Separate tags with commas.</p>
+										<p className="text-xs text-muted-foreground">
+											Separate tags with commas.
+										</p>
 									</div>
 								</div>
 								<DialogFooter>
-									<Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+									<Button
+										variant="outline"
+										onClick={() => setIsCreateDialogOpen(false)}
+									>
 										Cancel
 									</Button>
 									<Button onClick={handleCreate} disabled={!newTitle.trim()}>
@@ -187,14 +220,18 @@ export function DashboardPage(): React.JSX.Element {
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="w-56">
 								<div className="px-2 py-1.5">
-									<p className="text-sm font-medium text-foreground">{user?.username}</p>
+									<p className="text-sm font-medium text-foreground">
+										{user?.username}
+									</p>
 									<p className="text-xs text-muted-foreground">{user?.email}</p>
 								</div>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem disabled>
-									<Construction className="mr-2 size-4" />
+									<StickyNote className="mr-2 size-4" />
 									Account settings
-									<Badge variant="outline" className="ml-auto">Soon</Badge>
+									<Badge variant="outline" className="ml-auto">
+										Soon
+									</Badge>
 								</DropdownMenuItem>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem onClick={handleLogout}>
@@ -254,7 +291,10 @@ export function DashboardPage(): React.JSX.Element {
 									: "Create your first note to start building your personal knowledge garden."}
 							</p>
 							{!searchQuery && (
-								<Button className="mt-6" onClick={() => setIsCreateDialogOpen(true)}>
+								<Button
+									className="mt-6"
+									onClick={() => setIsCreateDialogOpen(true)}
+								>
 									<Plus className="size-4" />
 									Create note
 								</Button>
@@ -270,9 +310,15 @@ export function DashboardPage(): React.JSX.Element {
 									<div className="mb-3 flex items-start justify-between gap-3">
 										<div className="flex items-center gap-2">
 											{note.isPublic ? (
-												<Globe className="size-4 text-leaf-500" aria-label="Public note" />
+												<Globe
+													className="size-4 text-leaf-500"
+													aria-label="Public note"
+												/>
 											) : (
-												<Lock className="size-4 text-muted-foreground" aria-label="Private note" />
+												<Lock
+													className="size-4 text-muted-foreground"
+													aria-label="Private note"
+												/>
 											)}
 											<span className="text-xs text-muted-foreground">
 												{formatDate(note.updatedAt)}
@@ -281,15 +327,20 @@ export function DashboardPage(): React.JSX.Element {
 
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
-												<Button variant="ghost" size="icon" className="-mr-2 -mt-2 size-8 opacity-0 group-hover:opacity-100">
+												<Button
+													variant="ghost"
+													size="icon"
+													className="-mr-2 -mt-2 size-8 opacity-0 group-hover:opacity-100"
+												>
 													<MoreVertical className="size-4" />
 												</Button>
 											</DropdownMenuTrigger>
 											<DropdownMenuContent align="end">
-												<DropdownMenuItem disabled>
-													<Eye className="mr-2 size-4" />
-													View content
-													<Badge variant="outline" className="ml-auto">Soon</Badge>
+												<DropdownMenuItem asChild>
+													<Link href={`/notes/${note.id}`}>
+														<Pencil className="mr-2 size-4" />
+														Edit note
+													</Link>
 												</DropdownMenuItem>
 												<DropdownMenuSeparator />
 												<DropdownMenuItem
@@ -315,7 +366,11 @@ export function DashboardPage(): React.JSX.Element {
 									{note.tags.length > 0 && (
 										<div className="mt-3 flex flex-wrap gap-1.5">
 											{note.tags.map((tag) => (
-												<Badge key={tag.id} variant="secondary" className="text-xs">
+												<Badge
+													key={tag.id}
+													variant="secondary"
+													className="text-xs"
+												>
 													{tag.name}
 												</Badge>
 											))}
@@ -327,10 +382,12 @@ export function DashboardPage(): React.JSX.Element {
 											variant="outline"
 											size="sm"
 											className="w-full"
-											disabled
+											asChild
 										>
-											<Construction className="mr-2 size-4" />
-											Edit content
+											<Link href={`/notes/${note.id}`}>
+												<Pencil className="mr-2 size-4" />
+												Edit content
+											</Link>
 										</Button>
 									</div>
 								</article>
